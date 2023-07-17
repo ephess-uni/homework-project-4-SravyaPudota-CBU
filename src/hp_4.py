@@ -34,17 +34,15 @@ def add_date_range(values, start_date):
 def fees_report(infile, outfile):
     """Calculates late fees per patron id and writes a summary report to
     outfile."""
-
     with open(infile) as file:
         read_csv_obj = DictReader(file)
         late_fees = defaultdict(float)
         for record in read_csv_obj:
             late_fee_days = datetime.strptime(record['date_returned'], '%m/%d/%Y') - datetime.strptime(
                 record['date_due'], '%m/%d/%Y')
-            if late_fee_days.days > 0:
-                late_fees[record['patron_id']] += round(late_fee_days.days * 0.25, 2)
+            late_fees[record['patron_id']] += round(late_fee_days.days * 0.25, 2) if late_fee_days.days > 0 else 0.0
 
-        updated_list = [{'patron_id': key, 'late_fees': value} for key, value in late_fees.items()]
+        updated_list = [{'patron_id': key, 'late_fees': f'{value:.2f}'} for key, value in late_fees.items()]
 
     with open(outfile, "w", newline="") as file:
         col = ['patron_id', 'late_fees']
